@@ -1,0 +1,462 @@
+/* ================================================================
+   1. VARIABILI GLOBALI E DESIGN NATIVO iOS
+   ================================================================ */
+:root {
+  --bg-app: #f2f2f7;
+  --bg-card: #ffffff;
+  --text-main: #1c1c1e;
+  --text-muted: #8e8e93;
+  --accent: #007aff; /* Colore primario universale per l'app */
+  --accent-hover: #005bb5;
+  --danger: #ff3b30;
+  --green-fema: #28a745; /* Usato solo per l'icona in Home */
+  --blue-fema: #007aff; /* Usato solo per l'icona in Home */
+  --border-color: #c6c6c8;
+  --box-border: #e5e5ea;
+  --font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif;
+}
+
+.dark-theme {
+  --bg-app: #000000;
+  --bg-card: #1c1c1e;
+  --text-main: #ffffff;
+  --text-muted: #98989d;
+  --border-color: #38383a;
+  --box-border: #2c2c2e;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+}
+
+body {
+  background: var(--bg-app);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ================================================================
+   2. BOTTONI E INPUT CONDIVISI SU TUTTA L'APP
+   ================================================================ */
+button,
+.secondary-btn,
+.primary-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+.primary-btn {
+  background: var(--accent);
+  color: white;
+}
+.primary-btn:active {
+  background: var(--accent-hover);
+  transform: scale(0.98);
+}
+.secondary-btn {
+  background: var(--box-border);
+  color: var(--text-main);
+}
+.secondary-btn:active {
+  background: var(--border-color);
+}
+.danger-btn {
+  color: var(--danger);
+  background: transparent;
+}
+
+.icon-btn {
+  background: transparent;
+  color: var(--accent);
+  padding: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.icon-btn:active {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 16px;
+  background: var(--bg-app);
+  color: var(--text-main);
+  appearance: none;
+}
+.form-input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* ================================================================
+   3. LAYOUT STRUTTURALE (Top Nav e Bottom Bar)
+   ================================================================ */
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-card);
+  padding: calc(15px + env(safe-area-inset-top)) 20px 15px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--border-color);
+}
+.top-nav .app-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.bottom-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--bg-card);
+  padding: 15px 20px calc(20px + env(safe-area-inset-bottom)) 20px;
+  display: flex;
+  gap: 15px;
+  z-index: 100;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  border-top: 1px solid var(--border-color);
+}
+.bottom-action-bar button {
+  flex: 1;
+}
+
+/* Spaziatura per evitare che il contenuto finisca sotto la bottom bar */
+.app-content {
+  padding-bottom: 100px;
+}
+
+/* ================================================================
+   4. MODALI E IMPOSTAZIONI (Usate in tutti i moduli)
+   ================================================================ */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-end;
+  z-index: 200;
+  transition: opacity 0.2s ease;
+}
+.modal.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.modal.hidden .modal-content {
+  transform: translateY(100%);
+}
+
+.modal-content {
+  background: var(--bg-card);
+  width: 100%;
+  border-radius: 20px 20px 0 0;
+  padding: 25px 20px calc(40px + env(safe-area-inset-bottom)) 20px;
+  max-height: 85vh;
+  overflow-y: auto;
+  transition: transform 0.3s ease-out;
+  box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--box-border);
+}
+.modal-header h3 {
+  font-size: 20px;
+  font-weight: 700;
+}
+.close-modal {
+  background: var(--box-border);
+  color: var(--text-muted);
+  border-radius: 50%;
+  padding: 8px;
+  border: none;
+  font-size: 0;
+  display: flex;
+  align-items: center;
+}
+.close-modal:active {
+  background: var(--border-color);
+  color: var(--text-main);
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 51px;
+  height: 31px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-color);
+  transition: 0.3s;
+  border-radius: 34px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 27px;
+  width: 27px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+input:checked + .slider {
+  background-color: var(--accent);
+}
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+/* Checkbox di selezione (Es: scelta mesi o operai) */
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--text-main);
+  background: var(--bg-app);
+  padding: 8px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.checkbox-label:active {
+  opacity: 0.8;
+}
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+/* ================================================================
+   5. UTILITY CLASSES
+   ================================================================ */
+.mb-05 {
+  margin-bottom: 5px;
+}
+.mb-1 {
+  margin-bottom: 10px;
+}
+.mb-15 {
+  margin-bottom: 15px;
+}
+.mb-2 {
+  margin-bottom: 20px;
+}
+.mt-1 {
+  margin-top: 10px;
+}
+.mt-15 {
+  margin-top: 15px;
+}
+.w-100 {
+  width: 100%;
+}
+.block {
+  display: block;
+}
+.text-center {
+  text-align: center;
+}
+.text-small {
+  font-size: 13px;
+}
+.text-muted {
+  color: var(--text-muted);
+}
+.font-600 {
+  font-weight: 600;
+}
+.flex-center-gap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+hr {
+  border: none;
+  border-top: 1px solid var(--box-border);
+}
+h4 {
+  margin-bottom: 10px;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-main);
+}
+
+/* ================================================================
+   6. STILI ESCLUSIVI DEL LAUNCHER (index.html)
+   ================================================================ */
+.launcher-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  padding: calc(30px + env(safe-area-inset-top)) 20px 40px 20px;
+}
+.launcher-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+.launcher-header .app-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-main);
+}
+.app-grid-centered {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  align-content: center;
+  flex-grow: 1;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.launcher-card-btn {
+  flex: 0 0 calc(50% - 10px);
+  aspect-ratio: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-card);
+  padding: 15px;
+  border-radius: 20px;
+  border: 1px solid var(--box-border);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+.launcher-card-btn:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+.launcher-icon-wrap {
+  width: 55px;
+  height: 55px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 15px;
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.bg-green {
+  background: var(--green-fema);
+}
+.bg-blue {
+  background: var(--blue-fema);
+}
+.launcher-text-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.launcher-label {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.launcher-desc {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.launcher-footer {
+  text-align: center;
+  margin-top: auto;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ================================================================
+   7. OTTIMIZZAZIONI NATIVE iOS
+   ================================================================ */
+/* Blocca il rimbalzo elastico della pagina su iPhone */
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
+/* Disabilita la selezione accidentale del testo e la lente d'ingrandimento */
+header,
+nav,
+button,
+.launcher-card-btn,
+.modal-header,
+.box-title {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Riabilita la selezione testo SOLO dove serve scriverci dentro */
+[contenteditable="true"],
+input,
+textarea,
+select {
+  -webkit-user-select: auto;
+  user-select: auto;
+}
