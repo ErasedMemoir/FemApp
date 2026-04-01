@@ -316,13 +316,23 @@ document.addEventListener("DOMContentLoaded", () => {
     // ⚡ Compile HTML 1 volta in innerHTML, non loop appendChild + setAttribute
     tr.innerHTML = `
             <td class="col-desc">
-                <textarea class="input-desc" placeholder="Descrizione voce..." data-autogrow="true">${sanitizeInputString(desc)}</textarea>
+                <textarea class="input-desc" placeholder="Descrizione voce..." data-autogrow="true">${desc}</textarea>
             </td>
-            <td class="col-um"><input type="text" class="input-um" value="${um}" maxlength="6"></td>
+            <td class="col-um"><input type="text" class="input-um" value="${sanitizeInputString(um)}" maxlength="6"></td>
             <td class="col-qty"><input type="text" class="input-qty" value="${sanitizeInputString(qty)}" maxlength="8"></td>
             <td class="col-price"><input type="text" class="input-price" value="${sanitizeInputString(price)}" maxlength="11"></td>
             <td class="col-total row-cost">0,00 €</td>
             <td class="col-action no-print">
+                <button class="drag-handle" title="Trascina per riordinare" type="button" style="cursor: grab; padding: 4px; margin-right: 4px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="5" r="1"></circle>
+                        <circle cx="9" cy="12" r="1"></circle>
+                        <circle cx="9" cy="19" r="1"></circle>
+                        <circle cx="15" cy="5" r="1"></circle>
+                        <circle cx="15" cy="12" r="1"></circle>
+                        <circle cx="15" cy="19" r="1"></circle>
+                    </svg>
+                </button>
                 <button class="btn-delete-row" title="Rimuovi voce" type="button">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -646,6 +656,36 @@ document.addEventListener("DOMContentLoaded", () => {
     btnAddRow.addEventListener("click", () => {
       addRow();
       debouncedSaveData();
+    });
+  }
+
+  /**
+   * SORTABLE.JS INITIALIZATION - Drag & Drop Row Reordering
+   *
+   * Motivo: Users need to reorder rows without delete/recreate
+   * Flusso:
+   *   1. Sortable.create(tableBody) con handle: '.drag-handle'
+   *   2. Su reorder (onEnd), aggiorna cache, calcola totali, salva via debounce
+   *   3. animation: 150ms per smooth drag experience
+   *
+   * CRITICAL: onEnd callback MUST call updateElementCache(), calculateTotals(), debouncedSaveData()
+   * Motivo: Cache invalidation, stato sincro, persistenza localStorage
+   *
+   * Performance: O(n) reflows durante drag (vs jank di table-layout: auto)
+   * UX: Cursor: grab sul drag-handle, visual feedback animato
+   */
+  if (tableBody && window.Sortable) {
+    Sortable.create(tableBody, {
+      handle: ".drag-handle",
+      animation: 150,
+      ghostClass: "sortable-ghost",
+      dragClass: "sortable-drag",
+      onEnd: function (evt) {
+        // Dopo riordinamento, sincronizza stato interno
+        updateElementCache();
+        calculateTotals();
+        debouncedSaveData();
+      },
     });
   }
 

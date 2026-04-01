@@ -10,7 +10,7 @@
 
 // Nome cache con versione per invalidazione automatica tra releases
 // Quando si aggiorna questo nome, il vecchio cache viene rimosso in activate()
-const CACHE_NAME = "femapp-v1.0.0";
+const CACHE_NAME = "femapp-v1.0.1";
 
 /**
  * Lista di asset da caricare in cache al primo install
@@ -37,6 +37,7 @@ const ASSETS_TO_CACHE = [
   // Librerie esterne minificate (PDF generation, table formatting)
   "./js/jspdf.min.js",
   "./js/autotable.min.js",
+  "./js/sortable.min.js",
 
   // Icone PWA (display app in home screen iOS)
   "./assets/icon-192.png",

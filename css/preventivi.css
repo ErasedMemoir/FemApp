@@ -420,6 +420,112 @@ button.btn-primary:hover {
   }
 }
 
+/* DESKTOP RESPONSIVENESS v1.0.1 */
+@media screen and (min-width: 768px) {
+  body {
+    padding: 30px 20px;
+  }
+
+  .document {
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .app-content {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+}
+
+/* DESKTOP LARGE SCREENS - Enhanced Professional Layout */
+@media screen and (min-width: 1024px) {
+  body {
+    padding: 40px 20px;
+  }
+
+  .document {
+    max-width: 1000px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+  }
+
+  .company-info h1 {
+    font-size: 36px;
+  }
+
+  .items-table th,
+  .items-table td {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+
+  .totals-box {
+    width: 50%;
+  }
+
+  /* Table columns expand cleanly on desktop */
+  .table-responsive {
+    overflow-x: visible;
+  }
+
+  .items-table {
+    min-width: 100%;
+  }
+
+  .col-desc {
+    width: 45%;
+  }
+
+  .col-um {
+    width: 8%;
+  }
+
+  .col-qty {
+    width: 10%;
+  }
+
+  .col-price {
+    width: 15%;
+  }
+
+  .col-total {
+    width: 17%;
+  }
+
+  .col-action {
+    width: 5%;
+  }
+}
+
+/* SORTABLE.JS DRAG & DROP VISUAL FEEDBACK */
+.sortable-ghost {
+  opacity: 0.4;
+  background: var(--hover-bg);
+}
+
+.sortable-drag {
+  cursor: grabbing !important;
+  background: var(--hover-bg);
+  opacity: 0.8;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+}
+
+.drag-handle:hover {
+  color: var(--accent);
+  transform: scale(1.1);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
 @media print {
   @page {
     size: A4 portrait;
