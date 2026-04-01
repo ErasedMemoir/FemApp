@@ -1,16 +1,52 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * FemApp Service Worker - v1.0.0 (Release Ufficiale)
+ * FemApp Service Worker - v1.0.1 (Release Ufficiale)
  * ═══════════════════════════════════════════════════════════════════════════════
  *
  * Ruolo: Gestione cache PWA offline-first per accesso indipendente dalla rete.
  * Strategia: Cache-first con fallback a fetch (user non perde dati senza connessione).
  * Lifecycle: Install → Activate → Fetch (ripete per ogni navigazione/cambio pagina).
+ * Auto-Update: Controlla version.txt per aggiornamenti automatici (no reload manuale)
  */
 
 // Nome cache con versione per invalidazione automatica tra releases
-// Quando si aggiorna questo nome, il vecchio cache viene rimosso in activate()
-const CACHE_NAME = "femapp-v1.0.1";
+// Inizializzato dinamicamente dalla version.txt (non hardcodato)
+// Quando version.txt cambia, il SW crea nuovo CACHE_NAME automaticamente
+let CACHE_NAME = null;
+let CURRENT_VERSION = null;
+
+/**
+ * initVersion() - Carica versione da version.txt al boot del SW
+ * 
+ * Workflow:
+ *   1. SW avvia, fetch version.txt dal server (no-cache per essere aggiornato)
+ *   2. Parse versione (es: "1.0.2" → trim whitespace)
+ *   3. Crea CACHE_NAME = "femapp-v1.0.2"
+ *   4. Usa CACHE_NAME per install/activate
+ *
+ * Vantaggio: User modifica SOLO version.txt, mai il SW!
+ * Fallback: Se version.txt non trovato, usa default fallback
+ */
+async function initVersion() {
+  try {
+    const response = await fetch("./version.txt", { cache: "no-store" });
+    if (response.ok) {
+      CURRENT_VERSION = (await response.text()).trim();
+      CACHE_NAME = `femapp-v${CURRENT_VERSION}`;
+      console.log(`[SW Init] Caricato versione: ${CURRENT_VERSION}`);
+    } else {
+      throw new Error("version.txt non trovato");
+    }
+  } catch (error) {
+    // Fallback: Se non riesce a leggere version.txt, usa default
+    CURRENT_VERSION = "1.0.1";
+    CACHE_NAME = "femapp-v1.0.1";
+    console.warn(`[SW Init] Impossibile leggere version.txt, uso default v${CURRENT_VERSION}`, error);
+  }
+}
+
+// Inizializza versione immediatamente (before qualunque evento)
+initVersion();
 
 /**
  * Lista di asset da caricare in cache al primo install
@@ -112,4 +148,54 @@ self.addEventListener("fetch", (event) => {
     }),
   );
 });
-// Trigger clean 1.0.0 update
+
+/**
+ * EVENT: MESSAGE - Comunicazione con pagina client per update check
+ *
+ * Workflow client:
+ *   1. Page invia messaggio con type: "CHECK_UPDATE"
+ *   2. SW controlla se c'è una versione più recente in version.txt
+ *   3. Risponde con {currentVersion, newVersion}
+ *   4. Se mismatch, page notifica user con "Rilasciamento disponibile"
+ *
+ * Motivo: Controlla aggiornamenti senza reload automatico
+ * Fallback: Se version.txt non accessibile, mantieni versione corrente
+ */
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "CHECK_UPDATE") {
+    // Fetch versione dal server (bust cache con timestamp)
+    fetch("./version.txt?ts=" + Date.now(), { cache: "no-store" })
+      .then((response) => response.text())
+      .then((serverVersion) => {
+        serverVersion = serverVersion.trim();
+        const hasUpdate = serverVersion !== CURRENT_VERSION;
+
+        // Invia risposta al client (page)
+        event.ports[0].postMessage({
+          success: true,
+          currentVersion: CURRENT_VERSION,
+          newVersion: serverVersion,
+          hasUpdate: hasUpdate,
+        });
+
+        // Se c'è un aggiornamento, aggiorna il cache name
+        if (hasUpdate) {
+          CURRENT_VERSION = serverVersion;
+          CACHE_NAME = `femapp-v${serverVersion}`;
+          console.log(
+            `[SW Update] Nuova versione disponibile: ${serverVersion}`,
+          );
+        }
+      })
+      .catch((error) => {
+        // Network error o file non trovato
+        event.ports[0].postMessage({
+          success: false,
+          error: error.message,
+          currentVersion: CURRENT_VERSION,
+        });
+      });
+  }
+});
+
+// Trigger clean 1.0.1 update

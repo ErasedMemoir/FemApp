@@ -1,0 +1,6 @@
+{
+  "version": "1.0.1",
+  "lastUpdated": "2026-04-01T12:00:00Z",
+  "releaseType": "official",
+  "features": ["auto-update", "drag-drop", "desktop-responsive", "offline-first"]
+}

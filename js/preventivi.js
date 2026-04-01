@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * FemApp - preventivi.js - Generatore Preventivi/Fatture v1.0.0
+ * FemApp - preventivi.js - Generatore Preventivi/Fatture v1.0.1
  * ═══════════════════════════════════════════════════════════════════════════════
  *
  * Responsabilità:

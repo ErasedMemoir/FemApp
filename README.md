@@ -15,6 +15,19 @@
 * **Backup e Ripristino:** Sistema di salvataggio sicuro in formato JSON per esportare o trasferire i dati aziendali tra dispositivi.
 * **Drag & Drop Reordering:** Riordina le righe dei preventivi con semplice trascinamento (SortableJS integrato).
 * **Design Fully Responsive:** Ottimizzato per mobile, tablet, e desktop con una visualizzazione adattiva che mantiene la leggibilità e l'usabilità su qualsiasi schermo.
+* **Auto-Update System:** L'app controlla automaticamente ogni 5 minuti se sono disponibili aggiornamenti e notifica l'utente con una finestra elegante (non intrusiva). Niente reload forzato - l'utente sceglie quando aggiornare.
+
+### 🔄 Come funziona il Sistema Auto-Update
+
+FemApp implementa un sistema innovativo di aggiornamento automatico che non disturba l'utente:
+
+1. **Polling Silenzioso:** Ogni 5 minuti, l'app controlla il file `version.txt` sul server per verificare se esiste una versione più recente.
+2. **Notifica Non-Intrusive:** Se una nuova versione è disponibile, appare una notifica elegante in basso schermo con il pulsante "Aggiorna ora".
+3. **Scelta dell'Utente:** L'utente può aggiornare immediatamente cliccando il pulsante, oppure ignorare la notifica (scompare dopo 10 secondi).
+4. **Cache Intelligente:** Il Service Worker gestisce il cache in modo intelligente - quando si aggiorna, il vecchio cache viene rimosso automaticamente e il nuovo viene installato.
+5. **Zero Downtime:** L'intera operazione avviene senza forzare un reload, garantendo una transizione liscia tra versioni.
+
+**Vantaggio chiave:** I deploy non disturbano gli utenti che stanno lavorando. L'aggiornamento avviene nel momento giusto per loro, non imposto dal sistema.
 
 ## 🏗️ Architettura Tecnica
 Il progetto è stato sviluppato seguendo rigorosi standard ingegneristici per garantire la massima reattività su dispositivi mobili in condizioni di cantiere e su workstation desktop:

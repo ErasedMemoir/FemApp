@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * FemApp - presenze.js - Gestione Presenze Cantiere v1.0.0
+ * FemApp - presenze.js - Gestione Presenze Cantiere v1.0.1
  * ═══════════════════════════════════════════════════════════════════════════════
  *
  * Responsabilità:

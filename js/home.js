@@ -1,13 +1,13 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * FemApp - home.js - Gestione Globale dell'Applicazione v1.0.0
+ * FemApp - home.js - Gestione Globale dell'Applicazione v1.0.1
  * ═══════════════════════════════════════════════════════════════════════════════
  *
  * Responsabilità:
  *   - Inizializzazione tema scuro/chiaro (persistenza su localStorage)
  *   - Interfaccia modale per reset completo app
  *   - Registrazione Service Worker per offline-first PWA
- *   - Auto-versioning dalla cache (mostra v1.0.0 in UI)
+ *   - Auto-versioning dalla cache (mostra versione corrente in UI)
  *
  * Architettura: Vanilla JS, classList API (non setAttribute), localStorage only
  */
@@ -20,7 +20,6 @@
  * Timing: Dopo parsing HTML, prima di caricamento immagini (il momento giusto)
  */
 document.addEventListener("DOMContentLoaded", () => {
-  // Radice documento per applicare classi tema a livello globale
   // Radice documento per applicare classi tema a livello globale
   const docBody = document.body;
 
@@ -185,9 +184,11 @@ document.addEventListener("DOMContentLoaded", () => {
    *   2. Attendi load completo finestra (immagini, etc)
    *   3. Registra sw.js per il dominio corrente
    *   4. SW cattura TUTTI i fetch: offline-first cache
+   *   5. Aggiungi auto-check updates ogni 5 minuti
    *
    * Reason: PWA = app installabile su home screen iOS/Android, funziona senza rete
    * Fallback: Se SW fallisce registrazione, app comunque funziona (service worker è optional)
+   * Auto-Update: Controlla periodicamente per nuove versioni disponibili
    */
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
@@ -198,11 +199,157 @@ document.addEventListener("DOMContentLoaded", () => {
             "Service Worker registrato con successo con scope: ",
             registration.scope,
           );
+
+          // Auto-check per aggiornamenti ogni 5 minuti
+          setInterval(() => {
+            checkForUpdates(registration);
+          }, 5 * 60 * 1000); // 5 minuti
+
+          // Check subito al caricamento (dopo 3 secondi per stabilità)
+          setTimeout(() => {
+            checkForUpdates(registration);
+          }, 3000);
         })
         .catch((error) => {
           console.log("Registrazione Service Worker fallita: ", error);
         });
     });
+  }
+
+  /**
+   * checkForUpdates() - Controlla se SW ha una nuova versione disponibile
+   *
+   * Workflow:
+   *   1. Invia messaggio a SW con type: "CHECK_UPDATE"
+   *   2. SW controlla version.txt sul server
+   *   3. Se mismatch, SW return {hasUpdate: true}
+   *   4. Mostra notifica non-intrusive all'utente
+   *   5. User può refresh app per ottenere versione nuova
+   *
+   * Motivo: Non reload automatico (user potrebbe stare lavorando)
+   *         Notifica gentle = user decide se aggiornare
+   * Retry: Se fallisce, ritenta al prossimo interval (5 min)
+   */
+  function checkForUpdates(registration) {
+    if (!navigator.serviceWorker.controller) {
+      return; // SW non ancora attivo, skip
+    }
+
+    // Usa MessageChannel per bidirezionale communication
+    const messageChannel = new MessageChannel();
+
+    // Risposta dal SW arriverà su messageChannel.port1
+    messageChannel.port1.onmessage = (event) => {
+      const { success, hasUpdate, currentVersion, newVersion } = event.data;
+
+      if (!success) {
+        console.warn("Update check fallito:", event.data.error);
+        return;
+      }
+
+      if (hasUpdate) {
+        console.log(
+          `[FemApp] Nuova versione disponibile: ${currentVersion} → ${newVersion}`,
+        );
+        showUpdateNotification(newVersion);
+      } else {
+        console.log(`[FemApp] App è aggiornata (v${currentVersion})`);
+      }
+    };
+
+    // Invia messaggio al SW
+    navigator.serviceWorker.controller.postMessage(
+      { type: "CHECK_UPDATE" },
+      [messageChannel.port2], // Passa il secondo porto al SW
+    );
+  }
+
+  /**
+   * showUpdateNotification() - Mostra toast notifica di aggiornamento
+   *
+   * UI: Notifica in basso schermo, non bloccante, con pulsante Aggiorna
+   * UX: L'app continua a funzionare anche senza reload
+   * Action:
+   *   - User clicca "Aggiorna" → reload pagina (ottiene new cache)
+   *   - User ignora → app continua (reload manuale disponibile in impostazioni)
+   */
+  function showUpdateNotification(newVersion) {
+    // Controlla se notifica già mostrata (per non spammare)
+    if (document.getElementById("update-notification")) {
+      return;
+    }
+
+    const notificationHTML = `
+      <div id="update-notification" style="
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+        color: white;
+        padding: 16px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        animation: slideUp 0.3s ease-out;
+      ">
+        <div style="flex: 1; font-size: 13px; line-height: 1.4;">
+          <strong>Aggiornamento disponibile</strong><br/>
+          Versione ${newVersion} è pronta
+        </div>
+        <button id="update-now-btn" style="
+          background: rgba(255, 255, 255, 0.2);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          color: white;
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-weight: 500;
+          cursor: pointer;
+          white-space: nowrap;
+          font-size: 12px;
+        ">
+          Aggiorna ora
+        </button>
+      </div>
+      <style>
+        @keyframes slideUp {
+          from {
+            transform: translateY(100px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+      </style>
+    `;
+
+    // Inserisci notifica before closing body tag
+    document.body.insertAdjacentHTML("beforeend", notificationHTML);
+
+    // Aggancia evento al pulsante Aggiorna
+    const updateBtn = document.getElementById("update-now-btn");
+    if (updateBtn) {
+      updateBtn.addEventListener("click", () => {
+        // Reload pagina: browser userà nuovo cache dal SW aggiornato
+        window.location.reload();
+      });
+    }
+
+    // Auto-rimuovi notifica dopo 10 secondi se non cliccata
+    setTimeout(() => {
+      const notification = document.getElementById("update-notification");
+      if (notification) {
+        notification.style.animation = "slideUp 0.3s ease-in reverse";
+        setTimeout(() => notification.remove(), 300);
+      }
+    }, 10000);
   }
 
   // Carica e applica tema salvato (deve essere prima di page paint)
